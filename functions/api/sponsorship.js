@@ -8,12 +8,15 @@ export const SPONSOR_URL = "https://www.runpudsey.co.uk/page/leonards-mini-marat
 const CACHE_KEY = "sponsorship";
 const FRESH_MS = 15 * 60 * 1000;
 
-function json(body, status = 200) {
+// Good answers may be cached by the browser for a minute. Fallback answers
+// (runPudsey unreachable) must never be cached, or a visitor who happens to
+// load the page during a hiccup keeps seeing no total until the cache expires.
+function json(body, { cacheable = false } = {}) {
   return new Response(JSON.stringify(body), {
-    status,
+    status: 200,
     headers: {
       "content-type": "application/json; charset=utf-8",
-      "cache-control": "public, max-age=300",
+      "cache-control": cacheable ? "public, max-age=60" : "no-store",
       "x-content-type-options": "nosniff",
     },
   });
@@ -39,7 +42,7 @@ export function parseTotal(html) {
 async function fetchTotal() {
   const res = await fetch(SPONSOR_URL, {
     headers: { "user-agent": "LeonardMiniMarathon/1.0 (family progress page)" },
-    signal: AbortSignal.timeout(5000),
+    signal: AbortSignal.timeout(8000),
   });
   if (!res.ok) throw new Error(`runPudsey returned ${res.status}`);
   const parsed = parseTotal(await res.text());
@@ -54,13 +57,13 @@ export async function onRequestGet({ env, fetchTotalImpl = fetchTotal }) {
   } catch {}
 
   if (cached && Date.now() - Date.parse(cached.checkedAt) < FRESH_MS) {
-    return json({ ...cached, url: SPONSOR_URL });
+    return json({ ...cached, url: SPONSOR_URL }, { cacheable: true });
   }
 
   try {
     const fresh = { ...(await fetchTotalImpl()), checkedAt: new Date().toISOString() };
     await env.MILES.put(CACHE_KEY, JSON.stringify(fresh));
-    return json({ ...fresh, url: SPONSOR_URL });
+    return json({ ...fresh, url: SPONSOR_URL }, { cacheable: true });
   } catch {
     // Show the last total we knew about, or just the link if we never got one.
     return json({ ...(cached || { raised: null, supporters: null }), stale: true, url: SPONSOR_URL });

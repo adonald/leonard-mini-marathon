@@ -41,3 +41,11 @@ test("with no total ever fetched, it still returns the sponsor link", async () =
   assert.equal(data.raised, null);
   assert.match(data.url, /runpudsey/);
 });
+
+test("fallback answers are never cached by the browser; good ones briefly are", async () => {
+  const env = { MILES: fakeKV() };
+  const bad = await onRequestGet({ env, fetchTotalImpl: async () => { throw new Error("slow"); } });
+  assert.equal(bad.headers.get("cache-control"), "no-store");
+  const good = await onRequestGet({ env, fetchTotalImpl: async () => ({ raised: 62.6, supporters: 3 }) });
+  assert.equal(good.headers.get("cache-control"), "public, max-age=60");
+});
