@@ -1,0 +1,903 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Leonard's Mini Marathon</title>
+  <meta name="description" content="Follow Leonard as he runs a whole marathon, 26.2 miles, one mile at a time!">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>👟</text></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --sky: #bfe9ff;
+      --ink: #1d2b4f;
+      --ink-soft: #46557a;
+      --paper: #fffdf6;
+      --card: #ffffff;
+      --orange: #ff7a2f;
+      --orange-dark: #d9561a;
+      --yellow: #ffd23f;
+      --green: #5cbf4a;
+      --blue: #3b82f6;
+      --pink: #ff5d8f;
+      --line: #e6e0cf;
+      --radius: 22px;
+      --font: "Fredoka", "Baloo 2", "Trebuchet MS", system-ui, sans-serif;
+    }
+    * { box-sizing: border-box; }
+    html { -webkit-text-size-adjust: 100%; }
+    body {
+      margin: 0;
+      font-family: var(--font);
+      color: var(--ink);
+      background: var(--paper);
+      font-size: 19px;
+      line-height: 1.5;
+    }
+    .wrap { max-width: 1040px; margin: 0 auto; padding: 0 16px; }
+
+    /* ---------- Header ---------- */
+    header {
+      background: linear-gradient(180deg, #8fd8ff 0%, var(--sky) 100%);
+      padding: 28px 0 8px;
+      text-align: center;
+    }
+    h1 {
+      margin: 0;
+      font-size: clamp(2.1rem, 6vw, 3.6rem);
+      line-height: 1.05;
+      font-weight: 700;
+      letter-spacing: .5px;
+      color: #fff;
+      text-shadow: 0 3px 0 var(--orange-dark), 0 6px 0 rgba(0,0,0,.12);
+      -webkit-text-stroke: 1.5px var(--orange-dark);
+    }
+    .tagline { margin: 10px 0 0; font-size: clamp(1.1rem, 2.8vw, 1.45rem); font-weight: 500; }
+
+    /* ---------- Big progress ---------- */
+    .scoreboard {
+      margin: 18px auto 0;
+      background: var(--card);
+      border: 4px solid var(--ink);
+      border-radius: var(--radius);
+      box-shadow: 0 6px 0 var(--ink);
+      padding: 18px 20px 20px;
+      max-width: 720px;
+    }
+    .big-number { font-size: clamp(1.4rem, 4vw, 2rem); font-weight: 600; margin: 0; }
+    .big-number strong { font-size: 1.9em; color: var(--orange); line-height: 1; }
+    .bar {
+      position: relative;
+      height: 34px;
+      margin: 12px 0 8px;
+      background: #f1ece0;
+      border: 3px solid var(--ink);
+      border-radius: 999px;
+      overflow: hidden;
+    }
+    .bar-fill {
+      height: 100%;
+      width: 0;
+      background: repeating-linear-gradient(-45deg, var(--orange) 0 18px, #ff9a57 18px 36px);
+      border-radius: 999px;
+      transition: width 1.4s cubic-bezier(.2,.8,.2,1);
+    }
+    .bar-label { position: absolute; inset: 0; display: grid; place-items: center; font-weight: 700; font-size: 1rem; }
+    .cheer { margin: 4px 0 0; font-size: 1.15rem; color: var(--ink-soft); }
+
+    /* ---------- Map ---------- */
+    .map-card { margin: 26px auto 0; }
+    .map {
+      display: block;
+      width: 100%;
+      height: auto;
+      border: 4px solid var(--ink);
+      border-radius: var(--radius);
+      background: var(--sky);
+      box-shadow: 0 6px 0 var(--ink);
+    }
+    .map text { font-family: var(--font); }
+    .map-hint { text-align: center; font-size: .95rem; color: var(--ink-soft); margin: 10px 0 0; }
+
+    .runner-bob { animation: bob .5s ease-in-out infinite alternate; }
+    .leg-a { animation: swing .5s ease-in-out infinite alternate; }
+    .leg-b { animation: swing .5s ease-in-out infinite alternate-reverse; }
+    .arm-a { animation: swing .5s ease-in-out infinite alternate-reverse; }
+    .arm-b { animation: swing .5s ease-in-out infinite alternate; }
+    @keyframes bob { from { transform: translateY(0); } to { transform: translateY(-4px); } }
+    @keyframes swing { from { transform: rotate(-28deg); } to { transform: rotate(28deg); } }
+    .sun-rays { animation: spin 24s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .cloud { animation: drift 14s ease-in-out infinite alternate; }
+    .cloud.slow { animation-duration: 20s; }
+    @keyframes drift { from { transform: translateX(-18px); } to { transform: translateX(18px); } }
+    .fan { animation: wave .7s ease-in-out infinite alternate; }
+    #crowd > g:nth-child(2n) .fan { animation-delay: .35s; }
+    @keyframes wave { from { transform: translateY(0); } to { transform: translateY(-6px); } }
+    .marker-done circle { fill: var(--yellow); }
+    .trail-progress { transition: stroke-dashoffset 1.8s cubic-bezier(.2,.8,.2,1); }
+
+    /* ---------- Sections ---------- */
+    section { margin: 40px auto 0; }
+    h2 {
+      font-size: clamp(1.6rem, 4vw, 2.1rem);
+      margin: 0 0 14px;
+      text-align: center;
+      font-weight: 700;
+    }
+    h2 .emoji { display: inline-block; transform: rotate(-8deg); }
+
+    .badges {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 14px;
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    .badge {
+      text-align: center;
+      background: var(--card);
+      border: 3px dashed #c9c1ab;
+      border-radius: var(--radius);
+      padding: 14px 8px 12px;
+      color: #8a8371;
+    }
+    .badge .icon {
+      width: 82px; height: 82px;
+      margin: 0 auto 6px;
+      border-radius: 50%;
+      display: grid; place-items: center;
+      font-size: 42px;
+      background: #eee8d8;
+      filter: grayscale(1);
+      opacity: .55;
+    }
+    .badge .name { font-weight: 600; font-size: 1.05rem; line-height: 1.2; }
+    .badge .when { font-size: .9rem; }
+    .badge.earned { border: 3px solid var(--ink); color: var(--ink); box-shadow: 0 4px 0 var(--ink); }
+    .badge.earned .icon {
+      filter: none; opacity: 1;
+      background: radial-gradient(circle at 35% 30%, #fff6c4, var(--yellow) 70%);
+      border: 3px solid var(--orange-dark);
+      animation: pop .6s cubic-bezier(.3,1.8,.5,1) both;
+    }
+    @keyframes pop { from { transform: scale(.3); } to { transform: scale(1); } }
+
+    .facts {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+      gap: 14px;
+    }
+    .fact {
+      background: var(--card);
+      border: 3px solid var(--ink);
+      border-radius: var(--radius);
+      padding: 16px 18px;
+      box-shadow: 0 4px 0 var(--ink);
+    }
+    .fact .emoji { font-size: 2.2rem; line-height: 1; }
+    .fact p { margin: 6px 0 0; font-size: 1.08rem; }
+    .fact strong { color: var(--orange-dark); }
+
+    .log {
+      list-style: none;
+      padding: 0;
+      margin: 0 auto;
+      max-width: 720px;
+      display: grid;
+      gap: 10px;
+    }
+    .log li {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 4px 14px;
+      align-items: center;
+      background: var(--card);
+      border: 3px solid var(--line);
+      border-radius: 18px;
+      padding: 10px 14px;
+    }
+    .log .num {
+      grid-row: span 2;
+      width: 56px; height: 56px;
+      border-radius: 50%;
+      background: var(--orange);
+      color: #fff;
+      display: grid; place-items: center;
+      font-weight: 700;
+      font-size: 1.3rem;
+      border: 3px solid var(--ink);
+    }
+    .log .num.small { font-size: 1rem; background: var(--pink); }
+    .log .title { font-weight: 600; }
+    .log .note { color: var(--ink-soft); font-size: 1rem; overflow-wrap: anywhere; }
+    .empty { text-align: center; color: var(--ink-soft); }
+
+    /* ---------- Leonard's corner ---------- */
+    .corner {
+      max-width: 560px;
+      margin: 48px auto 0;
+      background: #f2f7ff;
+      border: 3px dashed #9db8e6;
+      border-radius: var(--radius);
+      padding: 18px 20px;
+    }
+    .corner h2 { font-size: 1.5rem; }
+    .corner p { margin: 0 0 12px; }
+    label { display: block; font-weight: 600; margin: 12px 0 4px; }
+    input[type=password], input[type=text], input[type=date] {
+      width: 100%;
+      font: inherit;
+      font-size: 1.1rem;
+      padding: 10px 12px;
+      border: 3px solid var(--ink);
+      border-radius: 14px;
+      background: #fff;
+      color: var(--ink);
+    }
+    .check { display: flex; gap: 8px; align-items: center; font-weight: 500; margin-top: 10px; }
+    .check input { width: 22px; height: 22px; }
+    button {
+      font: inherit;
+      cursor: pointer;
+      border-radius: 999px;
+      border: 3px solid var(--ink);
+      padding: 10px 22px;
+      font-weight: 600;
+      font-size: 1.05rem;
+      background: #fff;
+      color: var(--ink);
+      box-shadow: 0 4px 0 var(--ink);
+      transition: transform .08s, box-shadow .08s;
+    }
+    button:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--ink); }
+    button:disabled { opacity: .55; cursor: default; }
+    button.primary { background: var(--orange); color: #fff; }
+    button.huge { width: 100%; font-size: 1.45rem; padding: 16px 22px; margin-top: 16px; }
+    .row { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 16px; }
+    .msg { min-height: 1.5em; margin: 12px 0 0; font-weight: 600; }
+    .msg.bad { color: #c0262d; }
+    .msg.good { color: #1f7a33; }
+    :focus-visible { outline: 4px solid var(--blue); outline-offset: 3px; }
+
+    footer { text-align: center; padding: 36px 16px 48px; color: var(--ink-soft); font-size: .95rem; }
+
+    /* ---------- Confetti ---------- */
+    .confetti { position: fixed; inset: 0; pointer-events: none; overflow: hidden; z-index: 50; }
+    .confetti i {
+      position: absolute; top: -20px;
+      width: 12px; height: 18px; border-radius: 3px;
+      animation: fall linear forwards;
+    }
+    @keyframes fall { to { transform: translateY(110vh) rotate(720deg); } }
+
+    .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+    @media (max-width: 560px) {
+      body { font-size: 18px; }
+      .log .num { width: 48px; height: 48px; font-size: 1.1rem; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation: none !important; transition: none !important; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap">
+      <h1>Leonard's Mini Marathon</h1>
+      <p class="tagline">A whole marathon is 26.2 miles. Leonard is running it one mile at a time! 👟</p>
+
+      <div class="scoreboard" aria-live="polite">
+        <p class="big-number"><strong id="done">0</strong> of 26.2 miles done!</p>
+        <div class="bar" role="progressbar" aria-valuemin="0" aria-valuemax="26.2" aria-valuenow="0" id="bar">
+          <div class="bar-fill" id="bar-fill"></div>
+          <div class="bar-label" id="bar-label">0%</div>
+        </div>
+        <p class="cheer" id="cheer">Loading Leonard's progress…</p>
+      </div>
+
+      <div class="map-card">
+        <svg class="map" id="map" viewBox="0 0 1000 640" role="img" aria-labelledby="map-title">
+          <title id="map-title">A cartoon map of Leonard's marathon route</title>
+          <defs>
+            <linearGradient id="skyGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stop-color="#8fd8ff"/>
+              <stop offset="1" stop-color="#d9f3ff"/>
+            </linearGradient>
+            <linearGradient id="grassGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stop-color="#9be07a"/>
+              <stop offset="1" stop-color="#6cc552"/>
+            </linearGradient>
+            <g id="tree">
+              <rect x="-5" y="-6" width="10" height="26" rx="3" fill="#8b5a2b"/>
+              <circle cx="0" cy="-22" r="22" fill="#3fa34d"/>
+              <circle cx="-13" cy="-12" r="14" fill="#4cb85a"/>
+              <circle cx="13" cy="-14" r="15" fill="#4cb85a"/>
+              <circle cx="-6" cy="-30" r="6" fill="#7fd17f" opacity=".7"/>
+            </g>
+            <g id="flower">
+              <circle cx="0" cy="-6" r="4" fill="#ff5d8f"/>
+              <circle cx="6" cy="0" r="4" fill="#ff5d8f"/>
+              <circle cx="0" cy="6" r="4" fill="#ff5d8f"/>
+              <circle cx="-6" cy="0" r="4" fill="#ff5d8f"/>
+              <circle cx="0" cy="0" r="3.5" fill="#ffd23f"/>
+            </g>
+            <g id="bush">
+              <circle cx="-12" cy="0" r="12" fill="#4cb85a"/>
+              <circle cx="4" cy="-6" r="14" fill="#3fa34d"/>
+              <circle cx="18" cy="2" r="10" fill="#4cb85a"/>
+            </g>
+          </defs>
+
+          <!-- Sky and ground -->
+          <rect width="1000" height="640" fill="url(#skyGrad)"/>
+          <path d="M0 150 C 120 110 240 120 360 140 S 600 120 720 135 S 900 110 1000 130 L1000 640 L0 640 Z" fill="#b5e89a"/>
+          <path d="M0 175 C 160 150 320 165 480 172 S 820 150 1000 168 L1000 640 L0 640 Z" fill="url(#grassGrad)"/>
+
+          <!-- Sun with a smiley face -->
+          <g transform="translate(86 74)">
+            <g class="sun-rays" fill="#ffd23f">
+              <rect x="-4" y="-62" width="8" height="18" rx="4"/>
+              <rect x="-4" y="44" width="8" height="18" rx="4"/>
+              <rect x="-62" y="-4" width="18" height="8" rx="4"/>
+              <rect x="44" y="-4" width="18" height="8" rx="4"/>
+              <rect x="-4" y="-62" width="8" height="18" rx="4" transform="rotate(45)"/>
+              <rect x="-4" y="44" width="8" height="18" rx="4" transform="rotate(45)"/>
+              <rect x="-4" y="-62" width="8" height="18" rx="4" transform="rotate(-45)"/>
+              <rect x="-4" y="44" width="8" height="18" rx="4" transform="rotate(-45)"/>
+            </g>
+            <circle r="36" fill="#ffd23f" stroke="#f2a20c" stroke-width="4"/>
+            <circle cx="-12" cy="-6" r="4" fill="#1d2b4f"/>
+            <circle cx="12" cy="-6" r="4" fill="#1d2b4f"/>
+            <circle cx="-20" cy="6" r="5" fill="#ff9a7a" opacity=".7"/>
+            <circle cx="20" cy="6" r="5" fill="#ff9a7a" opacity=".7"/>
+            <path d="M-12 8 Q0 20 12 8" stroke="#1d2b4f" stroke-width="4" fill="none" stroke-linecap="round"/>
+          </g>
+
+          <!-- Clouds -->
+          <g class="cloud" fill="#fff">
+            <g transform="translate(330 58)">
+              <ellipse cx="0" cy="0" rx="46" ry="20"/>
+              <circle cx="-16" cy="-12" r="20"/>
+              <circle cx="14" cy="-16" r="24"/>
+            </g>
+          </g>
+          <g class="cloud slow" fill="#fff">
+            <g transform="translate(610 86)">
+              <ellipse cx="0" cy="0" rx="38" ry="16"/>
+              <circle cx="-12" cy="-10" r="16"/>
+              <circle cx="12" cy="-12" r="19"/>
+            </g>
+          </g>
+
+          <!-- Little birds -->
+          <g stroke="#1d2b4f" stroke-width="3" fill="none" stroke-linecap="round">
+            <path d="M470 50 q8 -8 16 0 q8 -8 16 0"/>
+            <path d="M510 74 q6 -6 12 0 q6 -6 12 0"/>
+          </g>
+
+          <!-- Scenery between the roads -->
+          <use href="#tree" x="250" y="300"/>
+          <use href="#tree" x="560" y="310"/>
+          <use href="#tree" x="760" y="296"/>
+          <use href="#tree" x="190" y="472"/>
+          <use href="#tree" x="470" y="466"/>
+          <use href="#tree" x="690" y="470"/>
+          <use href="#bush" x="380" y="320"/>
+          <use href="#bush" x="320" y="496"/>
+          <use href="#bush" x="620" y="612"/>
+          <use href="#bush" x="900" y="612"/>
+          <use href="#flower" x="150" y="610"/>
+          <use href="#flower" x="300" y="600"/>
+          <use href="#flower" x="460" y="616"/>
+          <use href="#flower" x="770" y="602"/>
+          <use href="#flower" x="420" y="330"/>
+          <use href="#flower" x="840" y="320"/>
+          <use href="#flower" x="560" y="488"/>
+          <use href="#flower" x="250" y="160"/>
+
+          <!-- Pond with a duck -->
+          <g transform="translate(860 470)">
+            <ellipse rx="56" ry="20" fill="#5ab8f0" stroke="#3a8fc6" stroke-width="3"/>
+            <g transform="translate(-6 -6)">
+              <ellipse cx="0" cy="0" rx="14" ry="9" fill="#ffd23f"/>
+              <circle cx="10" cy="-10" r="7" fill="#ffd23f"/>
+              <path d="M16 -10 l8 2 l-8 3 z" fill="#ff7a2f"/>
+              <circle cx="11" cy="-12" r="1.6" fill="#1d2b4f"/>
+            </g>
+          </g>
+
+          <!-- Cheering crowd near the finish -->
+          <g id="crowd" transform="translate(600 164)">
+            <g><g class="fan"><circle cx="0" cy="0" r="11" fill="#f6c9a0"/><rect x="-10" y="10" width="20" height="18" rx="6" fill="#3b82f6"/><path d="M-10 14 l-10 -16" stroke="#3b82f6" stroke-width="6" stroke-linecap="round"/></g></g>
+            <g transform="translate(34 0)"><g class="fan"><circle cx="0" cy="0" r="11" fill="#8d5a3b"/><rect x="-10" y="10" width="20" height="18" rx="6" fill="#ff5d8f"/><path d="M10 14 l10 -16" stroke="#ff5d8f" stroke-width="6" stroke-linecap="round"/></g></g>
+            <g transform="translate(68 0)"><g class="fan"><circle cx="0" cy="0" r="11" fill="#e8b48a"/><path d="M-11 -2 a11 11 0 0 1 22 0" fill="#d9d9d9"/><rect x="-10" y="10" width="20" height="18" rx="6" fill="#5cbf4a"/><path d="M-10 14 l-10 -16" stroke="#5cbf4a" stroke-width="6" stroke-linecap="round"/></g></g>
+            <g transform="translate(102 0)"><g class="fan"><circle cx="0" cy="0" r="11" fill="#c68c63"/><rect x="-10" y="10" width="20" height="18" rx="6" fill="#ffd23f"/><path d="M10 14 l10 -16" stroke="#ffd23f" stroke-width="6" stroke-linecap="round"/></g></g>
+            <g transform="translate(136 0)"><g class="fan"><circle cx="0" cy="0" r="11" fill="#f6c9a0"/><path d="M-11 -2 a11 11 0 0 1 22 0" fill="#e0e0e0"/><rect x="-10" y="10" width="20" height="18" rx="6" fill="#a66cff"/><path d="M-10 14 l-10 -16" stroke="#a66cff" stroke-width="6" stroke-linecap="round"/></g></g>
+            <g transform="translate(-20 -40)">
+              <rect x="0" y="0" width="190" height="30" rx="8" fill="#fff" stroke="#1d2b4f" stroke-width="3"/>
+              <text x="95" y="22" text-anchor="middle" font-size="19" font-weight="700" fill="#ff7a2f">GO LEONARD GO!</text>
+            </g>
+          </g>
+
+          <!-- The trail -->
+          <path id="trail" d="M 80 540 L 860 540 C 960 540 960 380 860 380 L 140 380 C 40 380 40 220 140 220 L 900 220"
+                fill="none" stroke="#c9975b" stroke-width="40" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M 80 540 L 860 540 C 960 540 960 380 860 380 L 140 380 C 40 380 40 220 140 220 L 900 220"
+                fill="none" stroke="#e8c48f" stroke-width="30" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M 80 540 L 860 540 C 960 540 960 380 860 380 L 140 380 C 40 380 40 220 140 220 L 900 220"
+                fill="none" stroke="#fff" stroke-width="3" stroke-dasharray="12 14" opacity=".8"/>
+          <path id="trail-progress" class="trail-progress" d="M 80 540 L 860 540 C 960 540 960 380 860 380 L 140 380 C 40 380 40 220 140 220 L 900 220"
+                fill="none" stroke="#ff7a2f" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>
+
+          <!-- Start flag -->
+          <g transform="translate(52 540)">
+            <rect x="-3" y="-80" width="6" height="80" fill="#1d2b4f"/>
+            <path d="M3 -80 h58 l-12 14 l12 14 h-58 z" fill="#5cbf4a" stroke="#1d2b4f" stroke-width="3"/>
+            <text x="30" y="-61" text-anchor="middle" font-size="15" font-weight="700" fill="#fff">START</text>
+          </g>
+
+          <!-- Milestones, mile markers and the runner are drawn by the script below -->
+          <g id="landmarks"></g>
+          <g id="markers"></g>
+
+          <!-- Finish arch -->
+          <g transform="translate(900 220)">
+            <rect x="-48" y="-92" width="10" height="92" fill="#1d2b4f"/>
+            <rect x="38" y="-92" width="10" height="92" fill="#1d2b4f"/>
+            <rect x="-62" y="-118" width="124" height="38" rx="10" fill="#ff5d8f" stroke="#1d2b4f" stroke-width="4"/>
+            <text x="0" y="-91" text-anchor="middle" font-size="22" font-weight="700" fill="#fff">FINISH</text>
+            <g transform="translate(-42 -80)">
+              <path d="M0 0 h84" stroke="#1d2b4f" stroke-width="2"/>
+              <path d="M6 0 l6 12 l6 -12 M24 0 l6 12 l6 -12 M42 0 l6 12 l6 -12 M60 0 l6 12 l6 -12" fill="#ffd23f" stroke="#1d2b4f" stroke-width="1.5"/>
+            </g>
+          </g>
+
+          <!-- Runner (Leonard!) -->
+          <g id="runner-pos" transform="translate(80 540)">
+            <g id="runner-face">
+              <ellipse cx="0" cy="2" rx="20" ry="5" fill="#000" opacity=".18"/>
+              <g class="runner-bob">
+                <!-- back arm and leg -->
+                <g transform="translate(-2 -50)"><g class="arm-b"><path d="M0 0 L -4 18" stroke="#e7b68c" stroke-width="7" stroke-linecap="round"/></g></g>
+                <g transform="translate(0 -26)"><g class="leg-b">
+                  <path d="M0 0 L 0 22" stroke="#2b4c7e" stroke-width="9" stroke-linecap="round"/>
+                  <ellipse cx="4" cy="25" rx="8" ry="5" fill="#ff5d8f" stroke="#1d2b4f" stroke-width="2"/>
+                </g></g>
+                <!-- body -->
+                <rect x="-12" y="-56" width="24" height="32" rx="9" fill="#ff7a2f" stroke="#1d2b4f" stroke-width="3"/>
+                <rect x="-8" y="-48" width="16" height="13" rx="2" fill="#fff" stroke="#1d2b4f" stroke-width="1.5"/>
+                <text x="0" y="-37.5" text-anchor="middle" font-size="11" font-weight="700" fill="#1d2b4f">L</text>
+                <!-- front leg and arm -->
+                <g transform="translate(0 -26)"><g class="leg-a">
+                  <path d="M0 0 L 0 22" stroke="#3a62a0" stroke-width="9" stroke-linecap="round"/>
+                  <ellipse cx="4" cy="25" rx="8" ry="5" fill="#ff5d8f" stroke="#1d2b4f" stroke-width="2"/>
+                </g></g>
+                <g transform="translate(2 -50)"><g class="arm-a"><path d="M0 0 L 4 18" stroke="#f6c9a0" stroke-width="7" stroke-linecap="round"/></g></g>
+                <!-- head -->
+                <circle cx="0" cy="-72" r="17" fill="#f6c9a0" stroke="#1d2b4f" stroke-width="3"/>
+                <path d="M-17 -74 C -16 -94 16 -96 17 -76 C 10 -84 -6 -86 -17 -74 Z" fill="#7a4a24" stroke="#1d2b4f" stroke-width="2"/>
+                <rect x="-17" y="-81" width="34" height="6" rx="3" fill="#3b82f6"/>
+                <path d="M-17 -78 l-12 -4 l2 8 z" fill="#3b82f6"/>
+                <circle cx="7" cy="-70" r="2.6" fill="#1d2b4f"/>
+                <circle cx="13" cy="-64" r="3.5" fill="#ff9a7a" opacity=".7"/>
+                <path d="M2 -63 Q 8 -58 13 -62" stroke="#1d2b4f" stroke-width="2.4" fill="none" stroke-linecap="round"/>
+              </g>
+            </g>
+          </g>
+        </svg>
+        <p class="map-hint">The orange trail shows how far Leonard has run. Each yellow circle is a mile he has finished!</p>
+      </div>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <section aria-labelledby="badges-h">
+      <h2 id="badges-h"><span class="emoji" aria-hidden="true">🏆</span> Stickers Leonard has earned</h2>
+      <ul class="badges" id="badges"></ul>
+    </section>
+
+    <section aria-labelledby="facts-h">
+      <h2 id="facts-h"><span class="emoji" aria-hidden="true">🤓</span> How far is that?</h2>
+      <div class="facts" id="facts"></div>
+    </section>
+
+    <section aria-labelledby="log-h">
+      <h2 id="log-h"><span class="emoji" aria-hidden="true">📒</span> Leonard's running diary</h2>
+      <ol class="log" id="log" reversed></ol>
+      <p class="empty" id="log-empty" hidden>No miles yet. The adventure is about to begin!</p>
+    </section>
+
+    <!-- Only Leonard knows the passcode, so only he can add miles. -->
+    <section class="corner" aria-labelledby="corner-h">
+      <h2 id="corner-h">🔒 Leonard's corner</h2>
+
+      <form id="unlock-form" autocomplete="off">
+        <p>Are you Leonard? Type your secret passcode to log a mile.</p>
+        <label for="passcode">Secret passcode</label>
+        <input type="password" id="passcode" required autocomplete="current-password">
+        <label class="check"><input type="checkbox" id="remember"> Remember me on this device</label>
+        <div class="row"><button type="submit" class="primary">Unlock</button></div>
+        <p class="msg" id="unlock-msg" role="status"></p>
+      </form>
+
+      <form id="log-form" hidden>
+        <p>Hi Leonard! 👋 Did you run today?</p>
+        <label for="run-date">When did you run?</label>
+        <input type="date" id="run-date" required>
+        <label for="run-note">How did it feel? (optional, everyone can see this)</label>
+        <input type="text" id="run-note" maxlength="140" placeholder="e.g. It was windy but I kept going!">
+        <button type="submit" class="primary huge" id="log-btn">I ran a mile! 🏃</button>
+        <p class="msg" id="log-msg" role="status"></p>
+        <div class="row">
+          <button type="button" id="undo-btn">Oops, undo my last mile</button>
+          <button type="button" id="lock-btn">Lock</button>
+        </div>
+      </form>
+    </section>
+  </main>
+
+  <footer>
+    Made with ❤️ for Leonard and everyone cheering him on.
+  </footer>
+
+  <div class="confetti" id="confetti" aria-hidden="true"></div>
+
+  <script>
+  (() => {
+    const RUNNER = "Leonard";
+    const TOTAL = 26.2;
+    const API = "/api/progress";
+    const STORE_KEY = "leonard-passcode";
+    const SVG_NS = "http://www.w3.org/2000/svg";
+    const $ = (id) => document.getElementById(id);
+
+    const BADGES = [
+      { at: 1,    icon: "👟", name: "First Mile!",       text: "The very first step" },
+      { at: 5,    icon: "🖐️", name: "High Five",         text: "5 miles" },
+      { at: 10,   icon: "🚀", name: "Double Digits",     text: "10 miles" },
+      { at: 13.1, icon: "🎈", name: "Halfway Hero",      text: "13.1 miles: half a marathon!" },
+      { at: 20,   icon: "🧱", name: "Wall Smasher",      text: "20 miles" },
+      { at: 26.2, icon: "🏅", name: "Marathon Champion", text: "All 26.2 miles!" },
+    ];
+
+    // Landmarks drawn along the trail (miles from the start).
+    const LANDMARKS = [
+      { at: 6.5,  kind: "balloons", label: "¼ of the way!" },
+      { at: 13.1, kind: "water",    label: "Halfway!" },
+      { at: 20,   kind: "wall",     label: "The Wall" },
+    ];
+
+    let state = { done: 0, miles: [], finished: false };
+    let shownDone = null;
+    let passcode = null;
+
+    const round1 = (n) => Math.round(n * 10) / 10;
+    const fmt = (n) => (Number.isInteger(n) ? String(n) : n.toFixed(1));
+    const nf = new Intl.NumberFormat();
+
+    function svg(tag, attrs = {}, parent) {
+      const el = document.createElementNS(SVG_NS, tag);
+      for (const [k, v] of Object.entries(attrs)) el.setAttribute(k, v);
+      if (parent) parent.appendChild(el);
+      return el;
+    }
+
+    /* ---------- Map ---------- */
+    const trail = $("trail");
+    const trailLen = trail.getTotalLength();
+    const pointAt = (miles) => trail.getPointAtLength(trailLen * Math.min(miles, TOTAL) / TOTAL);
+
+    function drawLandmarks() {
+      const g = $("landmarks");
+      for (const lm of LANDMARKS) {
+        const p = pointAt(lm.at);
+        const grp = svg("g", { transform: `translate(${p.x} ${p.y - 58})` }, g);
+        if (lm.kind === "balloons") {
+          [["#ff5d8f", -14], ["#3b82f6", 0], ["#ffd23f", 14]].forEach(([c, dx], i) => {
+            svg("path", { d: `M${dx} ${-8 + i * 2} Q ${dx / 2} 10 0 22`, stroke: "#1d2b4f", "stroke-width": 1.5, fill: "none" }, grp);
+            svg("ellipse", { cx: dx, cy: -18 + i * 2, rx: 10, ry: 12, fill: c, stroke: "#1d2b4f", "stroke-width": 2 }, grp);
+          });
+        } else if (lm.kind === "water") {
+          svg("rect", { x: -30, y: 0, width: 60, height: 22, rx: 4, fill: "#fff", stroke: "#1d2b4f", "stroke-width": 3 }, grp);
+          svg("rect", { x: -34, y: -10, width: 68, height: 12, rx: 4, fill: "#3b82f6", stroke: "#1d2b4f", "stroke-width": 3 }, grp);
+          [-18, 0, 18].forEach((dx) => svg("path", { d: `M${dx - 6} -22 h12 l-2 12 h-8 z`, fill: "#bfe9ff", stroke: "#1d2b4f", "stroke-width": 2 }, grp));
+        } else if (lm.kind === "wall") {
+          for (let r = 0; r < 3; r++) {
+            for (let c = 0; c < 4; c++) {
+              const off = r % 2 ? 9 : 0;
+              svg("rect", { x: -38 + c * 18 + off, y: -14 + r * 11, width: 17, height: 10, rx: 2, fill: "#d9643a", stroke: "#1d2b4f", "stroke-width": 2 }, grp);
+            }
+          }
+        }
+        const label = svg("text", { x: 0, y: lm.kind === "balloons" ? -36 : -28, "text-anchor": "middle", "font-size": 18, "font-weight": 700, fill: "#1d2b4f", stroke: "#fff", "stroke-width": 5, "paint-order": "stroke" }, grp);
+        label.textContent = lm.label;
+      }
+    }
+
+    function drawMarkers(done) {
+      const g = $("markers");
+      g.replaceChildren();
+      for (let m = 1; m <= 26; m++) {
+        const p = pointAt(m);
+        const isDone = done >= m;
+        const grp = svg("g", { transform: `translate(${p.x} ${p.y})`, class: isDone ? "marker-done" : "" }, g);
+        svg("circle", { r: 15, fill: "#fff", stroke: "#1d2b4f", "stroke-width": 3 }, grp);
+        const t = svg("text", { y: 6, "text-anchor": "middle", "font-size": 16, "font-weight": 700, fill: "#1d2b4f" }, grp);
+        t.textContent = m;
+      }
+    }
+
+    function placeRunner(done) {
+      const p = pointAt(done);
+      const ahead = pointAt(Math.min(done + 0.3, TOTAL));
+      const behind = pointAt(Math.max(done - 0.3, 0));
+      const goingLeft = done >= TOTAL ? false : ahead.x < p.x - 0.5 || (Math.abs(ahead.x - p.x) < 0.5 && behind.x > p.x);
+      $("runner-pos").setAttribute("transform", `translate(${p.x} ${p.y - 6})`);
+      $("runner-face").setAttribute("transform", goingLeft ? "scale(-1 1)" : "");
+    }
+
+    function setTrail(done) {
+      const prog = $("trail-progress");
+      prog.style.strokeDasharray = `${trailLen} ${trailLen}`;
+      prog.style.strokeDashoffset = String(trailLen * (1 - Math.min(done, TOTAL) / TOTAL));
+    }
+
+    /* ---------- Text bits ---------- */
+    function cheerFor(done) {
+      const left = round1(TOTAL - done);
+      if (done >= TOTAL) return `🎉 ${RUNNER} did it! He ran a WHOLE marathon! 🎉`;
+      if (done === 0) return `Ready, set… ${RUNNER} is about to start! First stop: mile 1.`;
+      const next = left < 1 ? "the FINISH LINE" : `mile ${Math.floor(done) + 1}`;
+      let msg;
+      if (done < 5) msg = "Great start!";
+      else if (done < 13.1) msg = "Keep those legs moving!";
+      else if (done < 20) msg = "Past halfway. Amazing!";
+      else if (left > 1) msg = "Nearly there. Don't stop now!";
+      else msg = "Just the last tiny bit left!";
+      return `${msg} Only ${fmt(left)} miles to go. Next stop: ${next}.`;
+    }
+
+    function renderBadges(done) {
+      const ul = $("badges");
+      ul.replaceChildren();
+      for (const b of BADGES) {
+        const li = document.createElement("li");
+        const earned = done >= b.at;
+        li.className = "badge" + (earned ? " earned" : "");
+        li.innerHTML = `<div class="icon" aria-hidden="true"></div><div class="name"></div><div class="when"></div>`;
+        li.querySelector(".icon").textContent = earned ? b.icon : "❓";
+        li.querySelector(".name").textContent = b.name;
+        li.querySelector(".when").textContent = earned ? b.text : `Unlocks at ${fmt(b.at)} miles`;
+        li.setAttribute("aria-label", `${b.name}: ${earned ? "earned!" : "not yet, unlocks at " + fmt(b.at) + " miles"}`);
+        ul.appendChild(li);
+      }
+    }
+
+    function renderFacts(done) {
+      const shown = done > 0 ? done : 1;
+      const metres = shown * 1609.34;
+      const prefix = done > 0 ? `${RUNNER} has run` : "Just one mile is";
+      const facts = [
+        { e: "👣", h: `${prefix} about <strong>${nf.format(Math.round(shown * 2000))}</strong> grown-up steps. With kid-sized legs it's even more!` },
+        { e: "🐋", h: `That's as long as <strong>${nf.format(Math.round(metres / 30))}</strong> blue whales lined up nose to tail!` },
+        { e: "🚌", h: `Or <strong>${nf.format(Math.round(metres / 11))}</strong> double-decker buses parked in a row!` },
+        { e: "🐌", h: `A garden snail would need about <strong>${nf.format(Math.round(TOTAL / 0.03 / 24))}</strong> days, without a single nap, to crawl a whole marathon.` },
+      ];
+      $("facts").innerHTML = facts.map((f) => `<div class="fact"><div class="emoji" aria-hidden="true">${f.e}</div><p>${f.h}</p></div>`).join("");
+    }
+
+    function renderLog(miles) {
+      const ol = $("log");
+      ol.replaceChildren();
+      $("log-empty").hidden = miles.length > 0;
+      const dateFmt = new Intl.DateTimeFormat(undefined, { weekday: "short", day: "numeric", month: "short", year: "numeric", timeZone: "UTC" });
+      let running = 0;
+      const rows = miles.map((m, i) => {
+        running = round1(running + m.distance);
+        return { ...m, index: i + 1, total: running };
+      });
+      for (const m of rows.reverse()) {
+        const li = document.createElement("li");
+        const num = document.createElement("div");
+        const last = m.distance < 1;
+        num.className = "num" + (last ? " small" : "");
+        num.textContent = last ? "🏁" : m.index;
+        num.setAttribute("aria-hidden", "true");
+        const title = document.createElement("div");
+        title.className = "title";
+        const when = dateFmt.format(new Date(m.date + "T00:00:00Z"));
+        title.textContent = last ? `The final ${fmt(m.distance)} miles! ${when}` : `Mile ${m.index}: ${when}`;
+        const note = document.createElement("div");
+        note.className = "note";
+        note.textContent = m.note ? `“${m.note}”` : `${fmt(m.total)} ${m.total === 1 ? "mile" : "miles"} so far`;
+        li.append(num, title, note);
+        ol.appendChild(li);
+      }
+    }
+
+    function render() {
+      const done = state.done;
+      $("done").textContent = fmt(done);
+      const pct = Math.min(100, Math.round((done / TOTAL) * 100));
+      $("bar-fill").style.width = pct + "%";
+      $("bar-label").textContent = pct + "%";
+      $("bar").setAttribute("aria-valuenow", String(done));
+      $("cheer").textContent = cheerFor(done);
+      $("map-title").textContent = `Cartoon map: ${RUNNER} has run ${fmt(done)} of ${TOTAL} miles`;
+      drawMarkers(done);
+      placeRunner(done);
+      setTrail(done);
+      renderBadges(done);
+      renderFacts(done);
+      renderLog(state.miles);
+      const logBtn = $("log-btn");
+      const left = round1(TOTAL - done);
+      logBtn.disabled = state.finished;
+      logBtn.textContent = state.finished ? "Marathon complete! 🏅" : left < 1 ? `I ran the final ${fmt(left)} miles! 🏁` : `I ran mile ${Math.floor(done) + 1}! 🏃`;
+      if (shownDone !== null && done > shownDone) celebrate(state.finished ? 220 : 90);
+      else if (shownDone === null && state.finished) celebrate(220);
+      shownDone = done;
+    }
+
+    /* ---------- Confetti ---------- */
+    function celebrate(count) {
+      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+      const box = $("confetti");
+      const colours = ["#ff7a2f", "#ffd23f", "#5cbf4a", "#3b82f6", "#ff5d8f", "#a66cff"];
+      for (let i = 0; i < count; i++) {
+        const c = document.createElement("i");
+        c.style.left = Math.random() * 100 + "vw";
+        c.style.background = colours[i % colours.length];
+        c.style.animationDuration = 2 + Math.random() * 2.5 + "s";
+        c.style.animationDelay = Math.random() * 0.8 + "s";
+        c.style.transform = `rotate(${Math.random() * 360}deg)`;
+        box.appendChild(c);
+        setTimeout(() => c.remove(), 6000);
+      }
+    }
+
+    /* ---------- Talking to the server ---------- */
+    async function load() {
+      try {
+        const res = await fetch(API, { cache: "no-store" });
+        if (!res.ok) throw new Error(res.status);
+        state = await res.json();
+        render();
+      } catch {
+        $("cheer").textContent = "Hmm, we couldn't load Leonard's progress. Try refreshing the page in a moment.";
+      }
+    }
+
+    async function send(body) {
+      const res = await fetch(API, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ ...body, passcode }),
+      });
+      let data = {};
+      try { data = await res.json(); } catch {}
+      if (!res.ok) {
+        const err = new Error(data.error || "Something went wrong. Try again?");
+        err.status = res.status;
+        throw err;
+      }
+      return data;
+    }
+
+    function localToday() {
+      const d = new Date();
+      d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
+      return d.toISOString().slice(0, 10);
+    }
+
+    function storage(fn) { try { return fn(window.localStorage); } catch { return null; } }
+
+    function showUnlocked(on) {
+      $("unlock-form").hidden = on;
+      $("log-form").hidden = !on;
+      $("corner-h").textContent = on ? "🔓 Leonard's corner" : "🔒 Leonard's corner";
+      if (on) {
+        $("run-date").value = localToday();
+        $("run-date").max = localToday();
+      }
+    }
+
+    async function unlock(code, quiet) {
+      passcode = code;
+      const msg = $("unlock-msg");
+      try {
+        const data = await send({ action: "check" });
+        state = data;
+        render();
+        showUnlocked(true);
+        msg.textContent = "";
+        return true;
+      } catch (e) {
+        passcode = null;
+        if (e.status === 401) storage((s) => s.removeItem(STORE_KEY));
+        if (!quiet) { msg.textContent = e.message; msg.className = "msg bad"; }
+        return false;
+      }
+    }
+
+    $("unlock-form").addEventListener("submit", async (ev) => {
+      ev.preventDefault();
+      const code = $("passcode").value;
+      if (await unlock(code, false)) {
+        if ($("remember").checked) storage((s) => s.setItem(STORE_KEY, code));
+        $("passcode").value = "";
+      }
+    });
+
+    $("log-form").addEventListener("submit", async (ev) => {
+      ev.preventDefault();
+      const btn = $("log-btn");
+      const msg = $("log-msg");
+      btn.disabled = true;
+      msg.textContent = "Saving…";
+      msg.className = "msg";
+      try {
+        state = await send({ action: "add", date: $("run-date").value, note: $("run-note").value });
+        $("run-note").value = "";
+        render();
+        msg.textContent = state.finished ? "YOU DID IT! You ran a whole marathon! 🏅🎉" : `Saved! That's ${fmt(state.done)} miles. Brilliant running! 🌟`;
+        msg.className = "msg good";
+      } catch (e) {
+        msg.textContent = e.message;
+        msg.className = "msg bad";
+        if (e.status === 401) lock();
+      } finally {
+        btn.disabled = state.finished;
+      }
+    });
+
+    let undoArmed = false;
+    $("undo-btn").addEventListener("click", async () => {
+      const btn = $("undo-btn");
+      const msg = $("log-msg");
+      if (!undoArmed) {
+        undoArmed = true;
+        btn.textContent = "Tap again to really undo";
+        setTimeout(() => { undoArmed = false; btn.textContent = "Oops, undo my last mile"; }, 4000);
+        return;
+      }
+      undoArmed = false;
+      btn.textContent = "Oops, undo my last mile";
+      try {
+        state = await send({ action: "undo" });
+        render();
+        msg.textContent = "OK, I took the last one off.";
+        msg.className = "msg good";
+      } catch (e) {
+        msg.textContent = e.message;
+        msg.className = "msg bad";
+      }
+    });
+
+    function lock() {
+      passcode = null;
+      storage((s) => s.removeItem(STORE_KEY));
+      showUnlocked(false);
+      $("log-msg").textContent = "";
+    }
+    $("lock-btn").addEventListener("click", lock);
+
+    drawLandmarks();
+    render();
+    shownDone = null; // don't throw confetti just because the page loaded
+    $("cheer").textContent = "Loading Leonard's progress…";
+    load().then(() => {
+      const saved = storage((s) => s.getItem(STORE_KEY));
+      if (saved) unlock(saved, true);
+    });
+    // Keep the page fresh for grandparents who leave it open.
+    setInterval(() => { if (document.visibilityState === "visible" && !passcode) load(); }, 60000);
+  })();
+  </script>
+</body>
+</html>
