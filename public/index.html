@@ -86,6 +86,23 @@
     }
     .bar-label { position: absolute; inset: 0; display: grid; place-items: center; font-weight: 700; font-size: 1rem; }
     .cheer { margin: 4px 0 0; font-size: 1.15rem; color: var(--ink-soft); }
+    .sponsor {
+      display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 8px 14px;
+      margin: 14px 0 0; padding: 12px 14px 4px;
+      border-top: 3px dashed var(--line);
+    }
+    .sponsor[hidden] { display: none; }
+    .sponsor .pig { font-size: 2.4rem; line-height: 1; animation: jiggle 2.4s ease-in-out infinite; }
+    @keyframes jiggle { 0%, 80%, 100% { transform: rotate(0); } 85% { transform: rotate(-12deg); } 90% { transform: rotate(10deg); } 95% { transform: rotate(-6deg); } }
+    .sponsor-text { margin: 0; font-size: 1.15rem; font-weight: 500; }
+    .sponsor-text strong { font-size: 1.5em; color: #1f7a33; }
+    .sponsor-btn {
+      display: inline-block; text-decoration: none; font-weight: 600;
+      background: var(--pink); color: #fff;
+      border: 3px solid var(--ink); border-radius: 999px;
+      padding: 8px 18px; box-shadow: 0 4px 0 var(--ink);
+    }
+    .sponsor-btn:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--ink); }
 
     /* ---------- Map ---------- */
     .map-card { margin: 26px auto 0; }
@@ -298,6 +315,11 @@
           <div class="bar-label" id="bar-label">0%</div>
         </div>
         <p class="cheer" id="cheer">Loading Leonard's progress…</p>
+        <div class="sponsor" id="sponsor" hidden>
+          <span class="pig" aria-hidden="true">🐷</span>
+          <p class="sponsor-text" id="sponsor-text"></p>
+          <a class="sponsor-btn" id="sponsor-link" href="https://www.runpudsey.co.uk/page/leonards-mini-marathon" target="_blank" rel="noopener">Sponsor Leonard ❤️</a>
+        </div>
       </div>
 
       <div class="map-card">
@@ -773,6 +795,28 @@
       }
     }
 
+    async function loadSponsorship() {
+      try {
+        const res = await fetch("/api/sponsorship");
+        if (!res.ok) throw new Error(res.status);
+        const data = await res.json();
+        const box = $("sponsor");
+        if (data.url) $("sponsor-link").href = data.url;
+        const text = $("sponsor-text");
+        if (typeof data.raised === "number") {
+          const money = new Intl.NumberFormat("en-GB", { style: "currency", currency: "GBP" }).format(data.raised);
+          const who = data.supporters ? ` by ${data.supporters} kind ${data.supporters === 1 ? "sponsor" : "sponsors"}` : "";
+          text.innerHTML = "<strong></strong> raised so far" + who + "!";
+          text.querySelector("strong").textContent = money;
+        } else {
+          text.textContent = `Cheer ${RUNNER} on by sponsoring him!`;
+        }
+        box.hidden = false;
+      } catch {
+        // No sponsorship info: just leave it out.
+      }
+    }
+
     async function send(body) {
       const res = await fetch(API, {
         method: "POST",
@@ -891,6 +935,7 @@
     render();
     shownDone = null; // don't throw confetti just because the page loaded
     $("cheer").textContent = "Loading Leonard's progress…";
+    loadSponsorship();
     load().then(() => {
       const saved = storage((s) => s.getItem(STORE_KEY));
       if (saved) unlock(saved, true);
