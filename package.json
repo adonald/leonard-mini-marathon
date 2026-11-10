@@ -1,0 +1,13 @@
+{
+  "name": "leonard-mini-marathon",
+  "private": true,
+  "type": "module",
+  "description": "Leonard's mini marathon tracker: 26.2 miles, one mile at a time.",
+  "scripts": {
+    "dev": "wrangler pages dev public --kv MILES --binding LOG_PASSCODE=letmein",
+    "test": "node --test"
+  },
+  "devDependencies": {
+    "wrangler": "^4.160.0"
+  }
+}

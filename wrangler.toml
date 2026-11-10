@@ -1,0 +1,5 @@
+# Cloudflare Pages settings, used by `npm run dev` for local testing.
+# On Cloudflare itself, the KV binding and passcode are set in the dashboard (see README).
+name = "leonard-mini-marathon"
+compatibility_date = "2026-10-01"
+pages_build_output_dir = "public"
