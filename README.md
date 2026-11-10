@@ -11,6 +11,7 @@ A one-page website where family can follow Leonard as he runs a whole marathon (
 - Stickers Leonard unlocks at 1, 5, 10, 13.1, 20 and 26.2 miles.
 - "How far is that?" facts (steps, blue whales, buses, snails).
 - Leonard's running diary: every mile with its date and an optional note.
+- Sponsorship: the total raised so far, read every 15 minutes from Leonard's [runPudsey page](https://www.runpudsey.co.uk/page/leonards-mini-marathon), with a **Sponsor Leonard** button.
 - Confetti whenever a new mile appears, and a big celebration at the finish.
 - **Leonard's corner** at the bottom: he types his passcode, then taps **I ran a mile!** He can pick the date, add a note, and undo a mistake.
 
