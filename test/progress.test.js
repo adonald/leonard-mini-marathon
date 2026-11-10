@@ -111,3 +111,12 @@ test("the Worker routes /api/progress and serves the page for everything else", 
   const bad = await worker.fetch(new Request(`${ORIGIN}/api/progress`, { method: "DELETE" }), env);
   assert.equal(bad.status, 405);
 });
+
+test("the fundraising total is served at /api/raised", async () => {
+  const { default: worker } = await import("../src/worker.js");
+  const kv = setup().MILES;
+  await kv.put("sponsorship", JSON.stringify({ raised: 62.6, supporters: 3, checkedAt: new Date().toISOString() }));
+  const env = { MILES: kv, ASSETS: { fetch: async () => new Response("page") } };
+  const res = await worker.fetch(new Request(`${ORIGIN}/api/raised`), env);
+  assert.equal((await res.json()).raised, 62.6);
+});
