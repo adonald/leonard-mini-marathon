@@ -797,7 +797,7 @@
 
     async function loadSponsorship() {
       try {
-        const res = await fetch("/api/sponsorship");
+        const res = await fetch("/api/sponsorship", { cache: "no-cache" });
         if (!res.ok) throw new Error(res.status);
         const data = await res.json();
         const box = $("sponsor");
