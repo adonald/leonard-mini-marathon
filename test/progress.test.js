@@ -100,3 +100,14 @@ test("future and nonsense dates are rejected; long notes are trimmed", async () 
   const res = await onRequestPost({ request: post({ passcode: env.LOG_PASSCODE, action: "add", date: today, note: "x".repeat(500) }), env });
   assert.equal((await res.json()).miles[0].note.length, 140);
 });
+
+test("the Worker routes /api/progress and serves the page for everything else", async () => {
+  const { default: worker } = await import("../src/worker.js");
+  const env = { ...setup(), ASSETS: { fetch: async () => new Response("page") } };
+  const api = await worker.fetch(new Request(`${ORIGIN}/api/progress`), env);
+  assert.equal((await api.json()).total, 26.2);
+  const page = await worker.fetch(new Request(`${ORIGIN}/`), env);
+  assert.equal(await page.text(), "page");
+  const bad = await worker.fetch(new Request(`${ORIGIN}/api/progress`, { method: "DELETE" }), env);
+  assert.equal(bad.status, 405);
+});

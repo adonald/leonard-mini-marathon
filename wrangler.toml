@@ -1,5 +1,14 @@
-# Cloudflare Pages settings, used by `npm run dev` for local testing.
-# On Cloudflare itself, the KV binding and passcode are set in the dashboard (see README).
+# Cloudflare Worker settings. Cloudflare reads this file when it builds from GitHub.
+# Leonard's passcode is NOT here: it's the LOG_PASSCODE secret, set in the Cloudflare dashboard.
 name = "leonard-mini-marathon"
+main = "src/worker.js"
 compatibility_date = "2026-10-01"
-pages_build_output_dir = "public"
+
+[assets]
+directory = "public"
+binding = "ASSETS"
+run_worker_first = ["/api/*"]
+
+[[kv_namespaces]]
+binding = "MILES"
+id = "28f73b6448f34db19637aa2cfc7161d9"
