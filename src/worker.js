@@ -11,7 +11,8 @@ export default {
       if (request.method === "POST") return onRequestPost({ request, env });
       return new Response("Method not allowed", { status: 405, headers: { allow: "GET, POST" } });
     }
-    if (url.pathname === "/api/sponsorship") {
+    // "/api/raised" avoids words like "sponsor" that ad blockers hide or block.
+    if (url.pathname === "/api/raised" || url.pathname === "/api/sponsorship") {
       if (request.method === "GET") return sponsorshipGet({ request, env });
       return new Response("Method not allowed", { status: 405, headers: { allow: "GET" } });
     }
