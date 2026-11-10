@@ -12,3 +12,9 @@ run_worker_first = ["/api/*"]
 [[kv_namespaces]]
 binding = "MILES"
 id = "28f73b6448f34db19637aa2cfc7161d9"
+
+# Preview builds (one per pull request) get their own storage,
+# so testing a change never touches Leonard's real miles.
+[[previews.kv_namespaces]]
+binding = "MILES"
+id = "bc830a287641464e8fb2841c554007db"
